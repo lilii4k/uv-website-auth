@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UV Rating Checker</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f8ff;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #b50909;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .search-box {
+            margin-bottom: 30px;
+        }
+        
+        input[type="text"] {
+            width: 70%;
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+        }
+        
+        button:hover {
+            background-color: #45A049;
+        }
+        
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+            display: none;
+        }
+        
+        .uv-value {
+            font-size: 3em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .uv-description {
+            font-size: 1.5em;
+            margin: 10px 0;
+        }
+        
+        .error {
+            color: red;
+            background-color: #ffebee;
+            border: 1px solid #ffcdd2;
+        }
+        
+        .loading {
+            text-align: center;
+            color: #666;
+            display: none;
+        }
+        
+        .info {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #e8f5e8;
+            border-radius: 5px;
+        }
+        
+        .info h3 {
+            color: #2e7d32;
+            margin-top: 0;
+        }
+        
+        .uv-scale {
+            margin-top: 20px;
+        }
+        
+        .scale-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+        }
+        
+        .scale-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>☀️ UV Rating Checker</h1>
+
+        <div style="text-align: center; margin-bottom: 20px;">
+        <a href="/table" style="color: #007bff; text-decoration: none; font-size: 16px;">📊 View Search History</a>
+        </div>
+        
+        <div class="search-box">
+            <input type="text" id="cityInput" placeholder="Enter your city name" onkeypress="handleKeyPress(event)">
+            <button onclick="getUVRating()">Check UV Rating</button>
+        </div>
+        
+        <div class="loading" id="loading">
+            <p>Getting UV data...</p>
+        </div>
+        
+        <div class="result" id="result">
+            <h2 id="cityName"></h2>
+            <div class="uv-value" id="uvValue"></div>
+            <div class="uv-description" id="uvDescription"></div>
+        </div>
+        
+        <div class="info">
+            <h3>UV Index Scale</h3>
+            <div class="uv-scale">
+                <div class="scale-item">
+                    <div class="scale-color" style="background-color: green;"></div>
+                    <span><strong>0-2:</strong> Low - Minimal danger</span>
+                </div>
+                <div class="scale-item">
+                    <div class="scale-color" style="background-color: yellow;"></div>
+                    <span><strong>3-5:</strong> Moderate - Some risk</span>
+                </div>
+                <div class="scale-item">
+                    <div class="scale-color" style="background-color: orange;"></div>
+                    <span><strong>6-7:</strong> High - Seek shade midday</span>
+                </div>
+                <div class="scale-item">
+                    <div class="scale-color" style="background-color: red;"></div>
+                    <span><strong>8-10:</strong> Very High - Avoid sun 10am-4pm</span>
+                </div>
+                <div class="scale-item">
+                    <div class="scale-color" style="background-color: purple;"></div>
+                    <span><strong>11+:</strong> Extreme - Avoid sun exposure</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                getUVRating();
+            }
+        }
+
+        async function getUVRating() {
+            const cityInput = document.getElementById('cityInput');
+            const city = cityInput.value.trim();
+            
+            if (!city) {
+                alert('Please enter a city name');
+                return;
+            }
+            
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('result').style.display = 'none';
+            
+            try {
+                const response = await fetch('/get_uv', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ city: city })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Display success result
+                    document.getElementById('cityName').textContent = `UV Rating for ${data.city}`;
+                    document.getElementById('uvValue').textContent = data.uv_index;
+                    document.getElementById('uvDescription').textContent = data.description;
+                    
+                    // Set background color based on UV level
+                    const result = document.getElementById('result');
+                    result.style.backgroundColor = getBackgroundColor(data.color);
+                    result.style.color = data.color === 'yellow' ? 'black' : 'white';
+                    result.style.display = 'block';
+                } else {
+                    // Display error
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                alert('Error fetching UV data. Please try again.');
+                console.error('Error:', error);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+        
+        function getBackgroundColor(color) {
+            const colors = {
+                'green': '#4caf50',
+                'yellow': '#ffeb3b',
+                'orange': '#ff9800',
+                'red': '#f44336',
+                'purple': '#9c27b0'
+            };
+            return colors[color] || '#gray';
+        }
+    </script>
+</body>
+</html>

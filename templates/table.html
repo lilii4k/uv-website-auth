@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>CityUV Table</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <div style="text-align: center; margin: 20px 0;">
+    <a href="/" style="color: #007bff; text-decoration: none; font-size: 16px;">🏠 Back to UV Search</a>
+    </div>
+    
+    <table class="table">
+      <tr class="table__header">
+        {% for header in headings %}
+        <th class="table__cell">{{ header }}</th>
+        {% endfor %}
+      </tr>
+      {% for row in data %}
+      <tr class="table__row">
+        {% for cell in row %}
+        <td class="table__cell">{{ cell }}</td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </table>
+  </body>
+</html>
