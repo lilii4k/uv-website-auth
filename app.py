@@ -36,7 +36,7 @@ def get_all_uv_data():
     try:
         mydb = get_db_connection()
         mycursor = mydb.cursor()
-        mycursor.execute("SELECT * FROM CityUv where 'UV Index'>6 ORDER BY City")
+        mycursor.execute("SELECT * FROM CityUv ORDER BY City")
         myresult = mycursor.fetchall()
         mycursor.close()
         mydb.close()
