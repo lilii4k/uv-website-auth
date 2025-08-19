@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, jsonify, redirect, flash, url
 import requests
 import mysql.connector
 import bcrypt
+import os
 
 app = Flask(__name__)
 app.secret_key = 'blablablahello'
@@ -12,10 +13,10 @@ UV_URL = 'http://api.openweathermap.org/data/2.5/uvi'
 
 def get_db_connection():
     return mysql.connector.connect(
-        host="localhost",
-        user="lili",
-        password="password",
-        database="uvWebpage"
+        host=os.getenv("DB_HOST", "localhost"),
+        user=os.getenv("DB_USER", "lili"),
+        password=os.getenv("DB_PASSWORD", "password"),
+        database=os.getenv("DB_NAME", "uvWebpage")
     )
 
 def save_uv_data(city, uv_index):
@@ -171,4 +172,4 @@ def login():
             return render_template("login.html")
         
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)

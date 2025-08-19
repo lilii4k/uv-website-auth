@@ -1,5 +1,7 @@
 FROM python:3.9
 WORKDIR /app
-COPY templates static app.py requirements.txt ./
+COPY requirements.txt .
 RUN pip install -r requirements.txt
-CMD python app.py
+COPY . .
+EXPOSE 5000
+CMD ["python", "app.py"]
